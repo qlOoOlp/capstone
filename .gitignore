@@ -16,3 +16,6 @@ data
 *logs
 rgb.mp4
 depth.mp4
+DATA/
+data_demo/
+outputs/

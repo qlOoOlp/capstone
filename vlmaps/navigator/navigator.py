@@ -22,7 +22,7 @@ class Navigator:
         Return a list of full map path points (row, col) as the palnned path
         """
         start = self._convert_full_map_pos_to_cropped_map_pos(start_full_map)
-        goal = self._convert_full_map_pos_to_cropped_map_pos(goal_full_map)
+        goal = self._convert_full_map_pos_to_cropped_map_pos(goal_full_map) #! 여기서 발생
         if self._check_if_start_in_graph_obstacle(start):
             self._rebuild_visgraph(start, vis)
         paths = plan_to_pos_v2(start, goal, self.obs_map, self.visgraph, vis)
@@ -52,6 +52,10 @@ class Navigator:
         full_map_pos: (row, col) in full map
         Return (row, col) in cropped_map
         """
+        print(full_map_pos[0],end='\n\n')
+        print(self.rowmin,end='\n\n')
+        print(full_map_pos[1],end='\n\n')
+        print(self.colmin,end='\n\n')
         print("full_map_pos: ", full_map_pos)
         print("self.rowmin: ", self.rowmin)
         print("self.colmin: ", self.colmin)

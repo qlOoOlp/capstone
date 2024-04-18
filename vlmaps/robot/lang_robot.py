@@ -137,6 +137,7 @@ class LangRobot:
     def move_to_right(self, name: str):
         self._set_nav_curr_pose()
         pos = self.map.get_right_pos(self.curr_pos_on_map, self.curr_ang_deg_on_map, name)
+        #print("\n\nsdfsdafasfh sadvsdfsfsfsdfsdf",pos)
         self.move_to(pos)
 
     def move_in_between(self, name_a: str, name_b: str):
