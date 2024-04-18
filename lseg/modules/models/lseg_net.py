@@ -250,7 +250,7 @@ class LSegEnc(BaseModel):
         hooks = {
             "clip_vitl16_384": [5, 11, 17, 23],
             "clipRN50x16_vitl16_384": [5, 11, 17, 23],
-            "clip_vitb32_384": [2, 5, 8, 11],
+            "clip_vitb32_384": [2, 5, 8, 11], #! https://huggingface.co/ai-forever/ruclip-vit-base-patch32-384
         }
 
         # Instantiate backbone and reassemble blocks
@@ -270,8 +270,9 @@ class LSegEnc(BaseModel):
         self.scratch.refinenet4 = _make_fusion_block(features, use_bn)
 
         self.logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07)).exp()
+        #* 로짓 스케일은 모델의 특성 벡터를 스케일링하여 유사도 계산에 사용되는 값
         if backbone in ["clipRN50x16_vitl16_384"]:
-            self.out_c = 768
+            self.out_c = 768 #!#!#!#! 여기!!! 512차원인 이유!
         else:
             self.out_c = 512
         self.scratch.head1 = nn.Conv2d(features, self.out_c, kernel_size=1)
@@ -297,7 +298,7 @@ class LSegEnc(BaseModel):
         if self.channels_last == True:
             x.contiguous(memory_format=torch.channels_last)
 
-        layer_1, layer_2, layer_3, layer_4 = forward_vit(self.pretrained, x)
+        layer_1, layer_2, layer_3, layer_4 = forward_vit(self.pretrained, x) #* 모델 레이어 설정
 
         layer_1_rn = self.scratch.layer1_rn(layer_1)
         layer_2_rn = self.scratch.layer2_rn(layer_2)
@@ -309,9 +310,9 @@ class LSegEnc(BaseModel):
         path_2 = self.scratch.refinenet2(path_3, layer_2_rn)
         path_1 = self.scratch.refinenet1(path_2, layer_1_rn)
 
-        text = text.to(x.device)
+        text = text.to(x.device) #* 직접 준 그 관찰할 장애물의 리스트의 토큰화된 텍스트
         self.logit_scale = self.logit_scale.to(x.device)
-        text_features = self.clip_pretrained.encode_text(text)
+        text_features = self.clip_pretrained.encode_text(text) #* 토큰화된 텍스트를 임베딩 벡터로 만드는 과정
 
         image_features = self.scratch.head1(path_1)
 
@@ -319,12 +320,18 @@ class LSegEnc(BaseModel):
         image_features = image_features.permute(0, 2, 3, 1).reshape(-1, self.out_c)
 
         # normalized features
-        image_features = image_features / image_features.norm(dim=-1, keepdim=True)
-        text_features = text_features / text_features.norm(dim=-1, keepdim=True)
+        image_features = image_features / image_features.norm(dim=-1, keepdim=True) #* 전체의 평균(1norm)으로 나누어 정규화
+        text_features = text_features / text_features.norm(dim=-1, keepdim=True) #* 위와 동일
 
-        pixel_encoding = self.logit_scale * image_features.half()
+        pixel_encoding = self.logit_scale * image_features.half() #* 정규화된 이미지 특성 결과물에 로짓 스케일을 곱해 로짓 스케일링
 
-        logits_per_image = pixel_encoding @ text_features.t()
+        #! 코사인 유사도 구하는 과정
+        #*아 이게 코사인 유사도 구하는 과정임 -> 코사인 유사도는 두 벡터 내적해서 둘이 같은 방향성을 가질수록 사이각이 0에 가까우니 큰 값을 가지자너
+        #* 그래서 두 벡터 내적을 두 벡터 크기로 나누어서 구하는건데 위에서 이미 둘다 정규화를 해주었으니, 내적만 해주면 되네!
+        logits_per_image = pixel_encoding @ text_features.t() #* 코사인 유사도를 통해 텍스트와 매칭되는 score를 확인할 수 있음!!
+
+        #* 배치 차원 제거하고 이미지 가로세로 크기로 텐서를 변환 (permute을 통해 차원 순서 바꿈)
+        #* ex. 4x4 -view(2,8)-> 2x8 (차원 순서가 0123에서 0231로 변경됨 즉, rgb의 차원이 마지막으로감) -permute(1,0)-> 8x2 (차원의 순서를 다시 원래대로 맞춰줌)
         pixel_encoding = pixel_encoding.float().view(imshape[0], imshape[2], imshape[3], -1).permute(0, 3, 1, 2)
 
         out = logits_per_image.float().view(imshape[0], imshape[2], imshape[3], -1).permute(0, 3, 1, 2)

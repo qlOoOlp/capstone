@@ -1,3 +1,5 @@
+#
+#*사용되는 함수: load_pose, save_map, transform_pc, get_sim_cam_mat, pos2grid_id, project_point, load_obj2cls_dict
 import cv2
 import h5py
 import matplotlib.patches as mpatches
@@ -9,7 +11,7 @@ from scipy.spatial.transform import Rotation as R
 import torch
 import yaml
 
-import examples.context as context
+#import examples.context as context #! 이거 안쓰이는데?
 
 # from utils.utils import *
 
@@ -61,7 +63,7 @@ def load_calib(calib_path):
     cam_mat = np.array([float(x) for x in array], dtype=np.float32).reshape((3, 3))
     return cam_mat
 
-
+#! 사용됨!
 def load_pose(pose_filepath):
     with open(pose_filepath, "r") as f:
         line = f.readline()
@@ -190,6 +192,7 @@ def depth2pc_real_world(depth, cam_mat):
     pc = pc * z
     mask_1 = pc[2, :] > 0.1
     # mask = mask_1
+    #* 얘는 가까운 것 말고도 너무 먼 친구도 필터링해주네
     mask_2 = pc[2, :] < 4
     mask = np.logical_and(mask_1, mask_2)
     # pc = pc[:, mask]
@@ -199,6 +202,10 @@ def depth2pc_real_world(depth, cam_mat):
 def depth2pc(depth, fov=90):
     """
     Return 3xN array
+    * 차원
+        * depth : (H, W) -> (720,1080)
+        * pc : (3, N=H*W) -> (3,777600 = 720*1080)
+        * mask : (N=H*W,) -> (777600 = 720*1080,)
     """
 
     h, w = depth.shape
@@ -207,12 +214,36 @@ def depth2pc(depth, fov=90):
     cam_mat_inv = np.linalg.inv(cam_mat)
 
     y, x = np.meshgrid(np.arange(h), np.arange(w), indexing="ij")
+    """
+    * meshgrid  -> 좌표벡터로부터 그리드 생성
+    * ex
+        * np.meshgrid(np.arange(3),np.arange(2),indexing='ij')
+            * indexing='ij'는 행 우선 인덱싱
+            * 3by2 행렬 두개가 생성 즉, (2*3*2)
+            
+            * (array([[0, 0],
+            *         [1, 1],
+            *         [2, 2]]),
+            * array([[0, 1],
+            *         [0, 1],
+            *         [0, 1]]))
+            ! 이렇게 하면 첫번째 행렬에는 y값이 저장되어있고 2번째 행렬에는 x값이 저장되어있지
+    """
 
-    x = x.reshape((1, -1))[:, :]
-    y = y.reshape((1, -1))[:, :]
-    z = depth.reshape((1, -1))[:, :]
+    x = x.reshape((1, -1))[:, :] #* [[1,2],[3,4]] -> [1,2,3,4]
+    y = y.reshape((1, -1))[:, :] #* [[1,2],[3,4]] -> [1,2,3,4]
+    z = depth.reshape((1, -1))[:, :] #* z값은 value 즉, depth
 
     p_2d = np.vstack([x, y, np.ones_like(x)])
+    """
+    * 안에 들어온 애들을 세로로 쌓겠다!
+    
+    * ex.
+    * p_2d = [[x1,x2,x3,...],
+    *         [y1,y2,y3,...],
+    *         [1,1,1,...]]
+    
+    """
     pc = cam_mat_inv @ p_2d
     pc = pc * z
     mask = pc[2, :] > 0.1
@@ -266,6 +297,7 @@ def transform_pc(pc, pose):
     """
     pose: the pose of the camera coordinate where the pc is in
     """
+    #homo는 homogeneous representation 의미겠죠 당연히
     pc_homo = np.vstack([pc, np.ones((1, pc.shape[1]))])
 
     pc_global_homo = pose @ pc_homo
@@ -417,7 +449,7 @@ def project_point(cam_mat, p):
 
 
 def get_sim_cam_mat_with_fov(h, w, fov):
-
+    #* 이건 point cloud의 projection matrix 4by4에서 3by3에 해당됨
     cam_mat = np.eye(3)
     cam_mat[0, 0] = cam_mat[1, 1] = w / (2.0 * np.tan(np.deg2rad(fov / 2)))
     cam_mat[0, 2] = w / 2.0
