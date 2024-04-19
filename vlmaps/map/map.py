@@ -96,6 +96,8 @@ class Map:
 
     def generate_cropped_obstacle_map(self, obstacle_map: np.ndarray) -> np.ndarray:
         x_indices, y_indices = np.where(obstacle_map == 0)
+        #*장애물이 없는 영역에 대한 rmin, rmax는 row에 관한 것으로 행의 최소, 최댓값 / cmin, cmax는 column에 관한 것으로 열의 최소, 최댓값
+        #* 맵이 크니깐 장애물이 없는 영역에 대해 Crop해준 것!
         self.rmin = np.min(x_indices)
         self.rmax = np.max(x_indices)
         self.cmin = np.min(y_indices)
@@ -177,15 +179,17 @@ class Map:
         binary_map = cv2.resize(binary_map.astype(float), (w, h))
         return binary_map
 
+    #! 이해해야됨!!!!
     def get_nearest_pos(self, curr_pos: List[float], name: str) -> List[float]:
-        contours, centers, bbox_list = self.get_pos(name)
-        ids_list = self.filter_small_objects(bbox_list, area_thres=10)
-        contours = [contours[i] for i in ids_list]
+        contours, centers, bbox_list = self.get_pos(name) #* 지금 map_config.yaml에서 맵 타입이 vlmaps로 지정되어서 Map을 부모 클래스로 하는 VLMap을 사용하는 상태!, 따라서 get_pos는 VLMap에 정의되어있으므로 그걸 사용
+        #* 해당 island에 해당되는 모든 island의 해당 정보 반환
+        ids_list = self.filter_small_objects(bbox_list, area_thres=10) #* bbox가 지나치게 작은 경우 노이즈일 경우가 높으므로 해당 island들은 필터링하기 위해 그 인덱스들의 리스트 획득
+        contours = [contours[i] for i in ids_list] #* 이를 이용해 작은 친구들(노이즈)는 필터링
         centers = [centers[i] for i in ids_list]
         bbox_list = [bbox_list[i] for i in ids_list]
         if len(centers) == 0:
-            return curr_pos
-        id = self.select_nearest_obj(centers, bbox_list, curr_pos)
+            return curr_pos #* 만약 해당 id에 해당되는 친구가 없다면 현재 위치를 반환
+        id = self.select_nearest_obj(centers, bbox_list, curr_pos) #* 그렇지않다면 현재 위치에서 가장 가까운 친구의 인덱스를 획득
 
         return self.nearest_point_on_polygon(curr_pos, contours[id])
 
@@ -232,10 +236,10 @@ class Map:
         dist_list = []
         for c, bbox in zip(centers, bbox_list):
             size = np.array([bbox[1] - bbox[0], bbox[3] - bbox[2]])
-            dist = get_dist_to_bbox_2d(np.array(c), size, np.array(curr_pos))
-            dist_list.append(dist)
-        id = np.argmin(dist_list)
-        return id
+            dist = get_dist_to_bbox_2d(np.array(c), size, np.array(curr_pos)) #* 각 island 별 장애물과 로봇 사이 거리 구함
+            dist_list.append(dist) #* 이걸 리스트에 넣어줌
+        id = np.argmin(dist_list) #* 그중에서 가장 작은 값을 갖는 녀석의 인덱스 번호를 획득
+        return id #* 해당 인덱스 번호를 반환
 
     def _get_left_pos(self, curr_pos: List[float], tar_pos: List[float], tar_bbox: List[float]) -> List[float]:
         di = tar_pos[0] - curr_pos[0]

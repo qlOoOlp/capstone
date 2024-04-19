@@ -29,11 +29,11 @@ class LangRobot:
         self.map.generate_obstacle_map()
 
     def empty_recorded_actions(self):
-        self.recorded_actions_list = []
-        self.recorded_robot_pos = []
-        self.goal_tfs = None
-        self.all_goal_tfs = None
-        self.goal_id = None
+        self.recorded_actions_list = [] #* action들이 저장될 리스트
+        self.recorded_robot_pos = [] #* robot의 위치가 저장될 리스트
+        self.goal_tfs = None #* ???
+        self.all_goal_tfs = None #* ???
+        self.goal_id = None #* ???
 
     def get_recorded_actions(self):
         return self.recorded_actions_list
@@ -176,9 +176,10 @@ class LangRobot:
         pos = self.map.get_east_pos(self.curr_pos_on_map, self.curr_ang_deg_on_map, name)
         self.move_to(pos)
 
+    #* object_goal_navigation에서 사용됨! 목표지점으로 이동시키는 함수
     def move_to_object(self, name: str):
-        self._set_nav_curr_pose()
-        pos = self.map.get_nearest_pos(self.curr_pos_on_map, name)
+        self._set_nav_curr_pose() #* 일단 현재 위치 정보 최신화 하고
+        pos = self.map.get_nearest_pos(self.curr_pos_on_map, name) #* 해당 name의 객체 중 로봇과 가장 가까운 객체에서도 로봇 위치와 가장 가까운 지점을 획득해 반환
         self.move_to(pos)
 
     def move_forward(self, meters: float):

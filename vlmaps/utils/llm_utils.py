@@ -14,8 +14,8 @@ def parse_object_goal_instruction(language_instr):
     Parse language instruction into a series of landmarks
     Example: "first go to the kitchen and then go to the toilet" -> ["kitchen", "toilet"]
     """
-    from openai import OpenAI
     
+    #! 와 이 예시문장을 줘서 input으로 들어온 language_instr에서 무엇을, 어떻게 뽑아내야될지 알려주는겨
     question = f"""
     I: go to the kitchen and then go to the toilet. A: kitchen, toilet
     I: go to the chair and then go to another chair. A: chair, chair
@@ -26,16 +26,13 @@ def parse_object_goal_instruction(language_instr):
     I: Go front left and move to the table, then turn around and find a cushion, later stand next to a column before finally navigate to any appliances. A: table, cushion, column, appliances.
     I: Move to the west of the chair, with the sofa on your right, move to the table, then turn right 90 degree, then find a table. A: chair, table
     I: {language_instr}. A:"""
-    response = client.completions.create(model=openai_model, prompt=question, max_tokens=64, temperature=0.0) #! gpt-3.5-turbo-instruct / davinci-002
+    response = client.completions.create(model=openai_model, prompt=question, max_tokens=64, temperature=0.0)
     result = response.choices[0].text.strip()
     print("landmarks: ", result)
-    return [x.strip() for x in result.split(",")]
+    return [x.strip() for x in result.split(",")] #* 목표 키워드들의 리스트가 반환! spatial과는 다르게 키워드만 반환되고, 밖에서 target으로 이동시키는 함수에 해당 키워드가 들어가 이동
 
 
 def parse_spatial_instruction(language_instr):
-    from openai import OpenAI
-    
-    openai_key = os.environ["OPENAI_KEY"]
     # instructions_list = language_instr.split(",")
     instructions_list = [language_instr]
     results = ""
@@ -169,4 +166,4 @@ robot.move_forward(3)
         print(result)
     print("generated code")
     print(results)
-    return results
+    return results #* 반환되는 것은 이동시키는 함수(왼쪽 이동, 오른쪽 이동, 회전, ...) 안에 키워드가 imput으로 들어간 string의 리스트!!!

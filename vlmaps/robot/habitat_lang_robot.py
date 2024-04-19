@@ -137,7 +137,7 @@ class HabitatLanguageRobot(LangRobot):
         #     locobot = rigid_obj_mgr.add_object_by_template_id(locobot_template_id, self.sim.agents[0].scene_node)
 
     def set_agent_state(self, tf: np.ndarray):
-        agent_state = tf2agent_state(tf)
+        agent_state = tf2agent_state(tf) #* translation 벡터와 rotation.x,y,z,w 쿼터니안 요소를 멤버로하는 state 객체
         self.sim.get_agent(0).set_state(agent_state)
         self._set_nav_curr_pose()
 

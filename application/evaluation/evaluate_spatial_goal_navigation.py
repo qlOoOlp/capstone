@@ -35,6 +35,9 @@ def main(config: DictConfig) -> None:
         for task_id in range(len(spatial_nav_task.task_dict)):
             spatial_nav_task.setup_task(task_id)
             result_code = parse_spatial_instruction(spatial_nav_task.instruction)
+            print("\n\nstep2")
+            print(result_code)
+            raise Exception("stop")
             print(f"instruction: {spatial_nav_task.instruction}")
             robot.empty_recorded_actions()
             robot.set_agent_state(spatial_nav_task.init_hab_tf)

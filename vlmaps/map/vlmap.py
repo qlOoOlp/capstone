@@ -237,13 +237,13 @@ class VLMap(Map):
         Get the contours, centers, and bbox list of a certain category
         on a full map
         """
-        assert self.categories
+        assert self.categories #! 이거 그 장애물 리스트? 같은건데 어디서 주어진 건지 못찾음 찾아봐야됨
         # cat_id = find_similar_category_id(name, self.categories)
         # labeled_map_cropped = self.scores_mat.copy()  # (N, C) N: number of voxels, C: number of categories
         # labeled_map_cropped = np.argmax(labeled_map_cropped, axis=1)  # (N,)
         # pc_mask = labeled_map_cropped == cat_id # (N,)
         # self.grid_pos[pc_mask]
-        pc_mask = self.index_map(name, with_init_cat=True)
+        pc_mask = self.index_map(name, with_init_cat=True) #* point cloud에 대한 mask
         mask_2d = pool_3d_label_to_2d(pc_mask, self.grid_pos, self.gs)
         mask_2d = mask_2d[self.rmin : self.rmax + 1, self.cmin : self.cmax + 1]
         # print(f"showing mask for object cat {name}")
@@ -257,11 +257,13 @@ class VLMap(Map):
         foreground = binary_dilation(foreground)
         # cv2.imshow(f"mask_{name}_processed", (foreground.astype(np.float32) * 255).astype(np.uint8))
         # cv2.waitKey()
-
-        contours, centers, bbox_list, _ = get_segment_islands_pos(foreground, 1)
+        #* ex. (1,1) 길이 4짜리 정사각형 -> contour: [−1.0,−1.0],[3.0,−1.0],[3.0,3.0],[−1.0,3.0] / bb : [-1,-1,3,3]
+        contours, centers, bbox_list, _ = get_segment_islands_pos(foreground, 1) #* 1은 label_id인데, 장애물이 있는 위치를 나타내는게 1이니깐 이걸 넣어준 거 즉, 장애물이 있는 곳에 대한 아웃풋들을 구하겠다
         # print("centers", centers)
-
+        print(contours)
+        raise Exception("Sdfsfsdfsf")
         # whole map position
+        #* crop된 맵을 기준으로 좌표를 구했으니 옆쪽의 잘린 길이들을 더해줘서 crop뙤지 않은 맵을 기준의 좌표로 변환해줌
         for i in range(len(contours)):
             centers[i][0] += self.rmin
             centers[i][1] += self.cmin

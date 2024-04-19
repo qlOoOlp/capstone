@@ -214,6 +214,8 @@ def get_dist_to_bbox_2d(center, size, pos):
 
     if pos[0] < min_corner_2d[0] or pos[0] > max_corner_2d[0]:
         if pos[1] < min_corner_2d[1] or pos[1] > max_corner_2d[1]:
+            #* 이경우엔 북서, 북동, 남서, 남동에 위치하고 장애물 밖에 로봇이 위치한 경우
+            #* 그냥 피타고라스 거리
             """
             star region
             *  |  |  *
@@ -229,6 +231,8 @@ def get_dist_to_bbox_2d(center, size, pos):
             dist = np.sqrt(dx_c * dx_c + dy_c * dy_c)
             return dist
         else:
+            #* 이 경우엔 서, 동에 위치한 경우
+            #* 장애물 중심으로부터의 가로 거리를 구하고 여기서 장애물 가로 길이의 반을 빼줌
             """
             star region
                |  |
@@ -242,6 +246,8 @@ def get_dist_to_bbox_2d(center, size, pos):
             return dx_b
     else:
         if pos[1] < min_corner_2d[1] or pos[1] > max_corner_2d[1]:
+            #* 이 경우엔 북, 남에 위치한 경우
+            #* 장애물 중심으로부터 세로 거리를 구하고 여기서 장애물 세로 길이의 반을 빼줌
             """
             star region
                |* |
@@ -253,7 +259,7 @@ def get_dist_to_bbox_2d(center, size, pos):
             """
             dy_b = np.abs(dy) - size[1] / 2
             return dy_b
-
+        #* 그 외에는 장애물 내부에 위치한 것이니 그냥 0을 반환
         """
         star region
            |  |  
