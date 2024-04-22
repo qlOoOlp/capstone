@@ -260,8 +260,7 @@ class VLMap(Map):
         #* ex. (1,1) 길이 4짜리 정사각형 -> contour: [−1.0,−1.0],[3.0,−1.0],[3.0,3.0],[−1.0,3.0] / bb : [-1,-1,3,3]
         contours, centers, bbox_list, _ = get_segment_islands_pos(foreground, 1) #* 1은 label_id인데, 장애물이 있는 위치를 나타내는게 1이니깐 이걸 넣어준 거 즉, 장애물이 있는 곳에 대한 아웃풋들을 구하겠다
         # print("centers", centers)
-        print(contours)
-        raise Exception("Sdfsfsdfsf")
+
         # whole map position
         #* crop된 맵을 기준으로 좌표를 구했으니 옆쪽의 잘린 길이들을 더해줘서 crop뙤지 않은 맵을 기준의 좌표로 변환해줌
         for i in range(len(contours)):
@@ -274,5 +273,5 @@ class VLMap(Map):
             for j in range(len(contours[i])):
                 contours[i][j, 0] += self.rmin
                 contours[i][j, 1] += self.cmin
-
+        #* 리턴되는 것은 그 id의 모든 island들의 contour, center, bbox의 리스트
         return contours, centers, bbox_list

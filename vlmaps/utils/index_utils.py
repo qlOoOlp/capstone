@@ -37,7 +37,7 @@ def find_similar_category_id(class_name, classes_list):
 
 
 def get_segment_islands_pos(segment_map, label_id, detect_internal_contours=False):
-    mask = segment_map == label_id
+    mask = segment_map == label_id #* 맵에서 label_id 즉, 1값이 있는 곳만 찾아 mask를 만듦
     mask = mask.astype(np.uint8)
     detect_type = cv2.RETR_EXTERNAL
     if detect_internal_contours:

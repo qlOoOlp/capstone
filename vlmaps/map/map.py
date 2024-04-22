@@ -191,14 +191,14 @@ class Map:
             return curr_pos #* 만약 해당 id에 해당되는 친구가 없다면 현재 위치를 반환
         id = self.select_nearest_obj(centers, bbox_list, curr_pos) #* 그렇지않다면 현재 위치에서 가장 가까운 친구의 인덱스를 획득
 
-        return self.nearest_point_on_polygon(curr_pos, contours[id])
+        return self.nearest_point_on_polygon(curr_pos, contours[id]) #* 해당 island의 경계선 중에서 현재 로봇 위치와 가장 가까운 지점의 좌표를 획득해 반환하는 것
 
     def nearest_point_on_polygon(self, coord: List[float], polygon: List[List[float]]):
         # Create a Shapely Point from the given coordinate
-        point = Point(coord)
+        point = Point(coord) #* shapely.geometry.Point 객체 생성 -> 기하 관련 패키지인듯
 
         # Create a Shapely Polygon from the polygon's coordinates
-        poly = Polygon(polygon)
+        poly = Polygon(polygon) #* shapely.geometry.Polygon 객체 생성
 
         # Find the nearest point on the polygon's boundary to the given point
         nearest = poly.exterior.interpolate(poly.exterior.project(point))

@@ -67,3 +67,14 @@ class Navigator:
         Return (row, col) in full map
         """
         return [cropped_map_pos[0] + self.rowmin, cropped_map_pos[1] + self.colmin]
+
+
+if __name__ =="__main__":
+    obstacles = [
+        [vg.Point(1, 1), vg.Point(3, 1), vg.Point(2, 4)],  # Triangle
+        [vg.Point(4, 4), vg.Point(6, 4), vg.Point(5, 7)]   # Another triangle
+    ]
+    g = vg.VisGraph()
+    g.build(obstacles)
+    shortest_path = g.shortest_path(vg.Point(0, 0), vg.Point(7, 7))
+    print("Shortest path:", shortest_path)

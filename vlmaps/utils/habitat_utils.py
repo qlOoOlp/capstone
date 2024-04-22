@@ -228,11 +228,11 @@ def set_agent_state(p: np.array, q: np.array):
 
 
 def tf2agent_state(tf: np.array):
-    p = tf[:3, 3]
-    r = R.from_matrix(tf[:3, :3])
-    quat = r.as_quat()  # xyzw
-    state = set_agent_state(p, quat)
-    return state
+    p = tf[:3, 3] #* translation 벡터
+    r = R.from_matrix(tf[:3, :3]) #* rotation 행렬
+    quat = r.as_quat()  # xyzw #* rotation 행렬을 xyzw의 쿼터니안으로 변환
+    state = set_agent_state(p, quat) #* translation 벡터와 쿼터니안 요소를 멤버로하는 하나의 state 객체 생성
+    return state #* 이를 반환
 
 
 def agent_state2tf(agent_state: habitat_sim.AgentState):
