@@ -8,6 +8,7 @@ from utils_hong.robot.map import Map
 #from vlmaps.map.map import Map
 
 from typing import List, Tuple, Dict, Any
+from vlmaps.utils.matterport3d_categories import mp3dcat
 
 
 class LangRobot:
@@ -21,7 +22,6 @@ class LangRobot:
         self.curr_pos_on_map = None
         self.curr_ang_deg_on_map = None
         pass
-
 
 
 
@@ -74,7 +74,6 @@ class LangRobot:
 
 
 
-
     def empty_recorded_actions(self):
         self.recorded_actions_list = [] #* action들이 저장될 리스트
         self.recorded_robot_pos = [] #* robot의 위치가 저장될 리스트
@@ -87,7 +86,6 @@ class LangRobot:
         return self.recorded_actions_list
     
 #?############################################################################################
-
     def load_code(self, code_dir: str, task_i: int):
         code_path = os.path.join(code_dir, f"{task_i:06}.txt")
         with open(code_path, "r") as f:
@@ -150,8 +148,6 @@ class LangRobot:
         nearest_id = self.map.select_nearest_obj(centers, bbox_list, self.curr_pos_on_map)
         contour = contours[nearest_id]
         return contour
-
-
 
 #?############################################################################################
 
