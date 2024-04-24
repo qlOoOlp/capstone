@@ -243,18 +243,39 @@ class VLMap(Map):
         # labeled_map_cropped = np.argmax(labeled_map_cropped, axis=1)  # (N,)
         # pc_mask = labeled_map_cropped == cat_id # (N,)
         # self.grid_pos[pc_mask]
-        pc_mask = self.index_map(name, with_init_cat=True) #* point cloud에 대한 mask
+        # print("##########################################################################\n"    )
+        # print(name)
+        pc_mask = self.index_map(name, with_init_cat=True) #* point cloud에 대한 mask (name이란 object에 대한 mask임)
         mask_2d = pool_3d_label_to_2d(pc_mask, self.grid_pos, self.gs)
+        # print(mask_2d.shape)
         mask_2d = mask_2d[self.rmin : self.rmax + 1, self.cmin : self.cmax + 1]
         # print(f"showing mask for object cat {name}")
         # cv2.imshow(f"mask_{name}", (mask_2d.astype(np.float32) * 255).astype(np.uint8))
         # cv2.waitKey()
+        # print(pc_mask.shape)
+        # print(mask_2d.shape)
+        # print(mask_2d[0])
 
+        #* 아래의 foreground 작업은 noise 및 작은 친구들을 제거해주는 작업임
         foreground = binary_closing(mask_2d, iterations=3)
         foreground = gaussian_filter(foreground.astype(float), sigma=0.8, truncate=3)
         foreground = foreground > 0.5
         # cv2.imshow(f"mask_{name}_gaussian", (foreground * 255).astype(np.uint8))
         foreground = binary_dilation(foreground)
+        # print(foreground)
+        # print(foreground.shape) #* mask_2d와 같은 shape
+
+
+        # import matplotlib.pyplot as plt
+        # from PIL import Image  
+        # obstacles_pil = Image.fromarray(foreground)
+        # plt.figure(figsize=(8, 6), dpi=120)
+        # plt.imshow(obstacles_pil, cmap='gray')
+        # plt.show()
+        
+        #raise Exception("Sfdsfsdfsdfsdf")
+
+
         # cv2.imshow(f"mask_{name}_processed", (foreground.astype(np.float32) * 255).astype(np.uint8))
         # cv2.waitKey()
         #* ex. (1,1) 길이 4짜리 정사각형 -> contour: [−1.0,−1.0],[3.0,−1.0],[3.0,3.0],[−1.0,3.0] / bb : [-1,-1,3,3]

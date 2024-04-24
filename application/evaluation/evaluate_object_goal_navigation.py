@@ -4,9 +4,9 @@ import numpy as np
 from omegaconf import DictConfig
 import hydra
 
-from utils_hong.robot.robot import LangRobot
-#from vlmaps.task.habitat_object_nav_task import HabitatObjectNavigationTask
-#from vlmaps.robot.habitat_lang_robot import HabitatLanguageRobot
+#from utils_hong.robot.robot import LangRobot
+from vlmaps.task.habitat_object_nav_task import HabitatObjectNavigationTask
+from vlmaps.robot.habitat_lang_robot import HabitatLanguageRobot
 from vlmaps.utils.llm_utils import parse_object_goal_instruction
 from vlmaps.utils.matterport3d_categories import mp3dcat
 

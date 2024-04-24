@@ -183,13 +183,16 @@ class Map:
     def get_nearest_pos(self, curr_pos: List[float], name: str) -> List[float]:
         contours, centers, bbox_list = self.get_pos(name) #* 지금 map_config.yaml에서 맵 타입이 vlmaps로 지정되어서 Map을 부모 클래스로 하는 VLMap을 사용하는 상태!, 따라서 get_pos는 VLMap에 정의되어있으므로 그걸 사용
         #* 해당 island에 해당되는 모든 island의 해당 정보 반환
-        ids_list = self.filter_small_objects(bbox_list, area_thres=10) #* bbox가 지나치게 작은 경우 노이즈일 경우가 높으므로 해당 island들은 필터링하기 위해 그 인덱스들의 리스트 획득
+        ids_list = self.filter_small_objects(bbox_list, area_thres=10) #* area threshold를 이용해서 그보다 작으면 제거 / bbox가 지나치게 작은 경우 노이즈일 경우가 높으므로 해당 island들은 필터링하기 위해 그 인덱스들의 리스트 획득
         contours = [contours[i] for i in ids_list] #* 이를 이용해 작은 친구들(노이즈)는 필터링
         centers = [centers[i] for i in ids_list]
         bbox_list = [bbox_list[i] for i in ids_list]
         if len(centers) == 0:
             return curr_pos #* 만약 해당 id에 해당되는 친구가 없다면 현재 위치를 반환
         id = self.select_nearest_obj(centers, bbox_list, curr_pos) #* 그렇지않다면 현재 위치에서 가장 가까운 친구의 인덱스를 획득
+
+        print("#########################################3")
+        print(curr_pos,type(curr_pos))        
 
         return self.nearest_point_on_polygon(curr_pos, contours[id]) #* 해당 island의 경계선 중에서 현재 로봇 위치와 가장 가까운 지점의 좌표를 획득해 반환하는 것
 
@@ -205,7 +208,6 @@ class Map:
 
         # Extract the nearest point's coordinates as a tuple
         nearest_coords = [int(nearest.x), int(nearest.y)]
-
         return nearest_coords
 
     def get_forward_pos(self, curr_pos: List[float], curr_angle_deg: float, meters: float) -> List[float]:

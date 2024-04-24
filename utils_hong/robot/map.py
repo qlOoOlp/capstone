@@ -166,6 +166,7 @@ class VLMap(Map):
         mask_2d = pool_3d_label_to_2d(pc_mask, self.grid_pos, self.gs) #& import from vlmaps.utils.visualize_utils
                                                                         #* 3d로 되어있는 mask를 2d로 변환
         mask_2d = mask_2d[self.rmin : self.rmax + 1, self.cmin : self.cmax + 1] #* crop된 맵을 기준으로 mask를 잘라줌
+
         # print(f"showing mask for object cat {name}")
         # cv2.imshow(f"mask_{name}", (mask_2d.astype(np.float32) * 255).astype(np.uint8))
         # cv2.waitKey()

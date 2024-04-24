@@ -19,3 +19,7 @@ depth.mp4
 DATA/
 data_demo/
 outputs/
+data_custom/
+data_custom2/
+custom_grid.txt
+custom_obstacles.txt

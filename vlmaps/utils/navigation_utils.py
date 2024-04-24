@@ -81,6 +81,8 @@ def build_visgraph_with_obs_map(obs_map, use_internal_contour=False, internal_po
         cv2.imshow("obs", obs_map_vis)
         cv2.waitKey()
 
+
+
     contours_list, centers_list, bbox_list, hierarchy = get_segment_islands_pos(
         obs_map, 0, detect_internal_contours=use_internal_contour
     )
