@@ -71,7 +71,9 @@ def convert_png_to_npy(input_dir, output_dir):
 
 def _convert_png_to_npy(png_path):
     img = Image.open(png_path)
-    return np.array(img)
+    ans = np.array(img)
+    ans = ans/1000
+    return np.array(ans)
         
 
 
@@ -86,7 +88,7 @@ if __name__ =="__main__":
     check_dir(data_path+"/depth")
 
 
-    poses_file=data_path+"/rgbd_slam_poses.txt"
+    poses_file=data_path+"/rgbd_slam_poses_camera.txt"
     pose_dir=data_path+"/pose"
     rgb_dir=data_path+"/rgb"
     depth_in=data_path+"/depth_img"

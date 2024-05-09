@@ -9,7 +9,8 @@ def poses2pose(poses_file, pose_dir):
     with open(poses_file, "r") as file:
         poses = file.readlines()
     # pose 정보를 각각의 파일에 저장
-    for idx, pose_info in enumerate(poses[1:]):
+    for idx, pose_info in enumerate(poses[1:]): # if you get data from real, then `enumerate(poses[1:])`
+        # if you get data from simulation, then erase next
         pose_info = pose_info.split(' ')[1:]
         pose_info = '\t'.join(pose_info)
 
@@ -23,7 +24,7 @@ def poses2pose(poses_file, pose_dir):
     print(f"poses.txt -> {len(poses[1:])} pose.txt done")
 if __name__ =="__main__":
     if len(sys.argv) != 3:
-        print("Usage: python script.py <poses_file> <pose_dir>")
+        print("> $ python <script>.py <poses_file> <pose_dir>")
         sys.exit(1)
     poses_file=sys.argv[1]
     pose_dir=sys.argv[2]
