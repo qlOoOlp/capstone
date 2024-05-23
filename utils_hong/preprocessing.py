@@ -13,7 +13,7 @@ def poses2pose(poses_file, pose_dir):
         poses = file.readlines()
     # pose 정보를 각각의 파일에 저장
     for idx, pose_info in enumerate(poses[1:]):
-        pose_info = pose_info.split(' ')[1:]
+        pose_info = pose_info.split(' ')[1:-1] #! custom_0513의 경우에는 각 줄 마지막에 기존 이미지 파일명이 적혀있어서 탈락시킴
         pose_info = '\t'.join(pose_info)
 
         # pose 파일명 생성 (000000.txt, 000001.txt, ...)
@@ -30,7 +30,7 @@ def rename_images(input_dir):
     # 지정한 디렉토리에서 모든 파일 목록을 가져옴
     files = os.listdir(input_dir)
     # 파일들을 정렬 (이름순)
-    files.sort()
+    files.sort(key=lambda x: int(os.path.splitext(x.split('_')[0])[0]))
     
     # 이미지 파일만 골라내기 위해 확장자 필터링 (예: jpg, png)
     image_files = [file for file in files if file.endswith(('.jpg', '.jpeg', '.png'))]
@@ -65,7 +65,7 @@ def convert_png_to_npy(input_dir, output_dir):
         
         # NumPy 배열을 NPY 파일로 저장
         np.save(npy_path, img_array)
-        
+    print(img_array)
     print(f"Converted {input_dir} to {output_dir}")
 
 
@@ -88,7 +88,7 @@ if __name__ =="__main__":
     check_dir(data_path+"/depth")
 
 
-    poses_file=data_path+"/rgbd_slam_poses_camera.txt"
+    poses_file=data_path+"/robot.txt"
     pose_dir=data_path+"/pose"
     rgb_dir=data_path+"/rgb"
     depth_in=data_path+"/depth_img"

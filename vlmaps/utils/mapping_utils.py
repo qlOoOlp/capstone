@@ -222,7 +222,7 @@ def rgb2pc(rgb):
     rgb_pc[:3, :] = rgb[y, x, :].T
     return rgb_pc
 
-
+#! depth2pc
 def depth2pc(depth, fov=90, intr_mat=None, min_depth=0.1, max_depth=10):
     """
     Return 3xN array and the mask of valid points in [min_depth, max_depth]
@@ -249,6 +249,36 @@ def depth2pc(depth, fov=90, intr_mat=None, min_depth=0.1, max_depth=10):
     mask = np.logical_and(mask, pc[2, :] < max_depth)
     # pc = pc[:, mask]
     return pc, mask
+
+
+
+def depth2pc_with_fov2(depth, fov_h=87, fov_v=58, intr_mat=None, min_depth=0.1, max_depth=3):
+    """
+    Return 3xN array and the mask of valid points in [min_depth, max_depth]
+    """
+
+    h, w = depth.shape
+
+    cam_mat = intr_mat
+    if intr_mat is None:
+        cam_mat = get_sim_cam_mat_with_fov2(h, w, fov_h, fov_v)
+    # cam_mat[:2, 2] = 0
+    cam_mat_inv = np.linalg.inv(cam_mat)
+
+    y, x = np.meshgrid(np.arange(h), np.arange(w), indexing="ij")
+    x = x.reshape((1, -1))[:, :] + 0.5
+    y = y.reshape((1, -1))[:, :] + 0.5
+    z = depth.reshape((1, -1))[:, :]
+
+    p_2d = np.vstack([x, y, np.ones_like(x)])
+    pc = cam_mat_inv @ p_2d
+    pc = pc * z
+    mask = pc[2, :] > min_depth
+
+    mask = np.logical_and(mask, pc[2, :] < max_depth)
+    # pc = pc[:, mask]
+    return pc, mask
+
 
 
 def get_new_pallete(num_cls):
@@ -588,6 +618,9 @@ def get_sim_cam_mat(h, w):
     return cam_mat
 
 
+
+
+
 def project_point(cam_mat, p):
     new_p = cam_mat @ p.reshape((3, 1))
     z = new_p[2, 0]
@@ -606,12 +639,27 @@ def project_points(cam_mat, p):
     return x, y, z
 
 
+#! get_sim_cam_mat_with_fov
 def get_sim_cam_mat_with_fov(h, w, fov):
     cam_mat = np.eye(3)
     cam_mat[0, 0] = cam_mat[1, 1] = w / (2.0 * np.tan(np.deg2rad(fov / 2)))
     cam_mat[0, 2] = w / 2.0
     cam_mat[1, 2] = h / 2.0
     return cam_mat
+
+
+def get_sim_cam_mat_with_fov2(h, w, fov_h=87, fov_v=58):
+    """
+    Generate intrinsic camera matrix from horizontal and vertical FOV
+    """
+    cam_mat = np.eye(3)
+    cam_mat[0, 0] = w / (2.0 * np.tan(np.deg2rad(fov_h / 2)))
+    cam_mat[1, 1] = h / (2.0 * np.tan(np.deg2rad(fov_v / 2)))
+    cam_mat[0, 2] = w / 2.0
+    cam_mat[1, 2] = h / 2.0
+    return cam_mat
+
+
 
 
 def load_obj2cls_dict(filepath):
@@ -684,3 +732,7 @@ def grid_id2pos_3d_real_batch(pos_np: np.ndarray, camera_height: float, cs: floa
     base_z = camera_height - pos_np[:, 2] * cs
 
     return np.concatenate([base_x.reshape((-1, 1)), base_y.reshape((-1, 1)), base_z.reshape((-1, 1))], axis=1)
+
+
+
+
